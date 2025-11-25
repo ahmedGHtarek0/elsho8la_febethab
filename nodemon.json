@@ -1,0 +1,5 @@
+{
+     "watch": "src",
+        "ext": "ts",
+    "exec": "ts-node src/elsho8la_febetha.ts"
+}

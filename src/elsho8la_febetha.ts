@@ -11,7 +11,7 @@ mongoose.connect(process.env.MongoUrl ?? '').then(() => {
 }).catch(err => {
     console.error('MongoDB connection error:', err);
 });
-const port =process.env.POSRT ?? 0;
+const port =process.env.PORT ?? 0;
 const app = express();
 // rate limiter
 const limiter = rateLimit({

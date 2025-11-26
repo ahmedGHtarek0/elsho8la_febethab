@@ -29,9 +29,10 @@ const CheckUserIfExsit= await AllusersModel.findOne({number});
 if(CheckUserIfExsit){
     return {data:{message:"User already exists"},status:400};
 }
+const otp = generateOTP();
 /* 
 
-
+ add but the otp varibale 
  here the code of the sms  abdo 
 
 
@@ -40,7 +41,6 @@ here we should  to sent otp to the number as sms , i will do soon :)
 
 
 */
-const otp = generateOTP();
 client.set(otp,number,{'EX': 300}); 
 return {data:'otp sent',status:201};
     }catch(err){

@@ -5,6 +5,7 @@ import AuthRoutes from './routes/AuthRoutes';
 import cookieParser from "cookie-parser";
 import { createClient } from 'redis';
 import { rateLimit } from 'express-rate-limit'
+import { v2 as cloudinary } from 'cloudinary';
 dotenv.config()
 mongoose.connect(process.env.MongoUrl ?? '').then(() => {
     console.log('Connected to MongoDB');
@@ -21,6 +22,7 @@ const limiter = rateLimit({
  ipv6Subnet: 56,
 
 })
+
 
 //middlewares 
 app.use(limiter)

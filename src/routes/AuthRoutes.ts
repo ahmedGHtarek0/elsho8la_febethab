@@ -6,6 +6,7 @@ import Sellermiddleware, { reqSeller } from "../middlewares/sellermiddleware";
 import Usermiddlewares, { reqUser } from "../middlewares/usermiddlewares";
 import Deliverymiddelware, { reqDelivaery } from "../middlewares/deliverymiddelware";
 import { client } from "../elsho8la_febetha";
+import { uploadSingleImage } from "../middlewares/uploadphotos";
 const router=express.Router();
 router.post('/checkAllusers',async(req,res)=>{
     try{
@@ -179,4 +180,44 @@ router.get('/refreshToken', async (req, res) => {
     }
 
 })
+router.post("/upload", uploadSingleImage.single("image"), (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ message: "No image uploaded." });
+  }
+
+  res.json({
+    message: "Image uploaded successfully",
+    url: req.file.path,  // Cloudinary secure URL
+    public_id: req.file.filename,
+  });
+});
+
+router.post(
+  "/uploads",
+  uploadSingleImage.fields([
+    { name: "front", maxCount: 1 },
+    { name: "back", maxCount: 1 }
+  ]),
+  (req:any, res) => {
+    const frontFile = req.files?.['front']?.[0];
+    const backFile = req.files?.['back']?.[0];
+
+    if (!frontFile || !backFile) {
+      return res.status(400).json({ message: "Both front and back images are required." });
+    }
+
+    res.json({
+      message: "Images uploaded successfully",
+      front: {
+        url: frontFile.path,
+        public_id: frontFile.filename
+      },
+      back: {
+        url: backFile.path,
+        public_id: backFile.filename
+      }
+    });
+  }
+);
+
 export default router;

@@ -1,12 +1,13 @@
 import express from "express";
-import { AdminZod, DriverZod, Role, SellerZod, UserZod } from "../DB/Allusers";
-import { checkUser, login, makeaccesstokenforadmin, makeaccesstokenfordelivery, makeaccesstokenforseller, makeaccesstokenforuser, signupadmin, signupdelivery, signupseller, signupUser } from "../services/AuthServices";
+import { AdminZod, AllusersModel, DriverZod, Role, SellerZod, UserZod } from "../DB/Allusers";
+import { checkUser, login, lovesfunction, makeaccesstokenforadmin, makeaccesstokenfordelivery, makeaccesstokenforseller, makeaccesstokenforuser, signupadmin, signupdelivery, signupseller, signupUser } from "../services/AuthServices";
 import Adminmiddelware, { reqAdmin } from "../middlewares/Adminmiddlware";
 import Sellermiddleware, { reqSeller } from "../middlewares/sellermiddleware";
 import Usermiddlewares, { reqUser } from "../middlewares/usermiddlewares";
 import Deliverymiddelware, { reqDelivaery } from "../middlewares/deliverymiddelware";
 import { client } from "../elsho8la_febetha";
 import { uploadSingleImage } from "../middlewares/uploadphotos";
+import jwt from "jsonwebtoken";
 const router=express.Router();
 router.post('/checkAllusers',async(req,res)=>{
     try{
@@ -146,7 +147,17 @@ router.post('/login',async(req,res)=>{
     return res.status(500).json({message:"Internal server error"});     
 }
 });
-router.delete('/logout',(req,res)=>{
+router.delete('/logout',async(req,res)=>{
+    const {number}=req.body;
+const Knowhisrole= await AllusersModel.findOneAndUpdate({number},{$set:{Isonline:false}});
+    if(!Knowhisrole){
+        return res.status(400).json({message:"Invalid number"});
+    }
+    const getrefreshToken=req.cookies.refreshToken;
+    if(!getrefreshToken){
+        return res.status(400).json({message:"No refresh token provided"});
+    }
+    await client.del(getrefreshToken);
     res.clearCookie("refreshToken");
     res.status(200).json({message:"Logged out successfully"});
 });
@@ -180,11 +191,31 @@ router.get('/refreshToken', async (req, res) => {
     }
 
 })
+
+router.post('/LovesForSeller',Sellermiddleware, async(req:reqSeller,res)=>{
+    try{
+        const number=req.seller.number;
+    const {Loves}=req.body;
+    const {data,status}=await lovesfunction(number,Loves);
+    return res.status(status).json(data);
+}catch(err){
+    return res.status(500).json({message:"Internal server error"});
+}
+});
+router.post('/LovesForUser',Usermiddlewares, async(req:reqUser,res)=>{
+    try{
+        const number=req.user.number;
+    const {Loves}=req.body;
+    const {data,status}=await lovesfunction(number,Loves);
+    return res.status(status).json(data);
+}catch(err){
+    return res.status(500).json({message:"Internal server error"});
+}
+});
 router.post("/upload", uploadSingleImage.single("image"), (req, res) => {
   if (!req.file) {
     return res.status(400).json({ message: "No image uploaded." });
   }
-
   res.json({
     message: "Image uploaded successfully",
     url: req.file.path,  // Cloudinary secure URL
@@ -219,5 +250,6 @@ router.post(
     });
   }
 );
+
 
 export default router;

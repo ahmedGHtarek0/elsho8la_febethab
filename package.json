@@ -8,7 +8,7 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
+  "description": "graduation project\r test git\r ok now the first step i will build in this server is the Db for the (user , admin , driver , seller).\r make the all Auth except the sms otp sender",
   "dependencies": {
     "cloudinary": "^2.8.0",
     "cookie-parser": "^1.4.7",

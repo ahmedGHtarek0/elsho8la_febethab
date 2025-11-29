@@ -4,8 +4,9 @@ import dotenv from 'dotenv';
 import AuthRoutes from './routes/AuthRoutes';
 import cookieParser from "cookie-parser";
 import { createClient } from 'redis';
-import { rateLimit } from 'express-rate-limit'
 import { v2 as cloudinary } from 'cloudinary';
+import { AllusersModel } from './DB/Allusers';
+import { treeifyError } from 'zod';
 dotenv.config()
 mongoose.connect(process.env.MongoUrl ?? '').then(() => {
     console.log('Connected to MongoDB');
@@ -14,18 +15,9 @@ mongoose.connect(process.env.MongoUrl ?? '').then(() => {
 });
 const port =process.env.PORT ?? 0;
 const app = express();
-// rate limiter
-const limiter = rateLimit({
-	windowMs: 15 * 60 * 1000, // 15 minutes
-	limit: 10, // Limit each IP to 100 requests per `window` (here, per 15 minutes).
-	standardHeaders: 'draft-8', // draft-6: `RateLimit-*` headers; draft-7 & draft-8: combined `RateLimit` header
- ipv6Subnet: 56,
-
-})
-
 
 //middlewares 
-app.use(limiter)
+
 app.use(express.json());        
 app.use(cookieParser())
 
@@ -44,6 +36,7 @@ export const client = createClient({
 await client.connect();
 console.log('Connected to Redis');
 })();
+ 
 
 
 //routes

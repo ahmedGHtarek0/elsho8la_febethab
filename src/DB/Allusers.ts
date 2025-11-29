@@ -13,6 +13,9 @@ interface Allusers extends Document{
     address?:string;
     RestaurantName?:string;
     role?:Role;
+    Loves?:string[];
+    Isonline?:boolean;
+    isVrifyed?:boolean;
 }
 const AllusersSchema:Schema=new Schema<Allusers>({
     username:{type:String,required:true},
@@ -20,7 +23,10 @@ const AllusersSchema:Schema=new Schema<Allusers>({
     password:{type:String,required:true},
     address:{type:String,required:false},
     RestaurantName:{type:String,required:false},
-    role:{type:String,enum:Role,default:Role.USER}
+    role:{type:String,enum:Role,default:Role.USER},
+    Loves:{type:[String],required:false, default: undefined},
+    Isonline:{type:Boolean,default:false},
+    isVrifyed:{type:Boolean,default:false}
 });
 const AllusersModel=mongoose.model<Allusers>("Allusers",AllusersSchema);
 const  SellerZod=zod.object({

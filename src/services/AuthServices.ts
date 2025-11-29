@@ -11,6 +11,7 @@ interface SignupAllUers{
     RestaurantName?: string | undefined;
     role?:Role | undefined;
     otp?:string | undefined;
+    Loves?:string[] | undefined;
 }
 function generateOTP() {
   let otp = "";
@@ -53,6 +54,7 @@ const login=async({number,password}:SignupAllUers)=>{
     if(!Knowhisrole){
         return {data:{message:"Invalid number or password"},status:400};
     }
+    const makeisonleine= await AllusersModel.findOneAndUpdate({number},{$set:{Isonline:true}});
     const role=Knowhisrole.role;
      if(!role){
             return {data:{message:"Invalid role"},status:400};
@@ -84,7 +86,6 @@ const login=async({number,password}:SignupAllUers)=>{
 }catch(err){
     return {data:{err:'err in the login function'+err},status:500};
 }
-
 }
 const signupUser = async ({ username, number, password, address, role ,otp}: SignupAllUers) => {
     try {
@@ -95,7 +96,7 @@ const signupUser = async ({ username, number, password, address, role ,otp}: Sig
         if (!getotp || getotp !== number) {
             return { data: { message: 'Invalid or expired OTP' }, status: 400 };
         }
-        const NewUser = new AllusersModel({ username, number, password, address, role });
+        const NewUser = new AllusersModel({ username, number, password, address, role,Isonline:true });
         await NewUser.save();
         await client.del(otp);
         const accesstoken = await makeaccesstokenforuser({ number, role });
@@ -110,8 +111,20 @@ console.log({ accesstoken, refreshtoken })
         };
     }
 };
-
-const signupseller=async({username,number,password,address,role,RestaurantName,otp}:SignupAllUers)=>{
+const lovesfunction=async(number:string,Loves:string[])=>{
+    try{
+    const user= await AllusersModel.findOne({number});
+    if(!user){
+        return {data:{message:"User not found"},status:404};
+    }
+    user.Loves=Loves;
+    await user.save();
+    return {data:{message:"Loves updated successfully"},status:200};
+}catch(err){
+    return {data:{error:'err in the loves function'+err},status:500};
+}
+}
+const signupseller=async({username,number,password,address,role,RestaurantName,otp,Loves}:SignupAllUers)=>{
     try{
  
     if (!username || !number || !password || !address || !role || !RestaurantName || !otp) {
@@ -121,7 +134,7 @@ const signupseller=async({username,number,password,address,role,RestaurantName,o
     if (!getotp || getotp !== number) {
         return { data: { message: 'Invalid or expired OTP' }, status: 400 };
     }
-    const NewUser=new AllusersModel({username,number,password,address,role,RestaurantName,otp});
+    const NewUser=new AllusersModel({username,number,password,address,role,Loves,RestaurantName,Isonline:true});
     await NewUser.save();
     await client.del(otp); 
      const accesstoken=await  makeaccesstokenforseller({number:number,role:role});
@@ -141,7 +154,7 @@ const signupadmin=async({username,number,password,role,otp}:SignupAllUers)=>{
     if (!getotp || getotp !== number) {
         return { data: { message: 'Invalid or expired OTP' }, status: 400 };
     }
-    const NewUser=new AllusersModel({username,number,password,role});
+    const NewUser=new AllusersModel({username,number,password,role,Isonline:true});
     await NewUser.save();
     await client.del(otp);
      const accesstoken=await makeaccesstokenforadmin({number:number,role:role});
@@ -161,7 +174,7 @@ const signupdelivery=async({username,number,password,address,role,otp}:SignupAll
     if (!getotp || getotp !== number) {
         return { data: { message: 'Invalid or expired OTP' }, status: 400 };
     }
-    const NewUser=new AllusersModel({username,number,password,address,role});
+    const NewUser=new AllusersModel({username,number,password,address,role,Isonline:true});
     await NewUser.save();
     await client.del(otp); 
      const accesstoken=await makeaccesstokenfordelivery({number:number,role:role});
@@ -195,4 +208,4 @@ const makeaccesstokenfordelivery=async(data:any)=>{
 const makerefreshtokenforDelivery=async(data:any)=>{
     return(jwt.sign(data,process.env.DELIVERY_SECRETE_KEY as string,{expiresIn:'7d'}));
 }
-export {checkUser,signupUser,signupseller,signupadmin,signupdelivery,login,makeaccesstokenforadmin,makeaccesstokenforuser,makeaccesstokenforseller,makeaccesstokenfordelivery}
+export {checkUser,signupUser,lovesfunction,signupseller,signupadmin,signupdelivery,login,makeaccesstokenforadmin,makeaccesstokenforuser,makeaccesstokenforseller,makeaccesstokenfordelivery}

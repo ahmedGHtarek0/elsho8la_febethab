@@ -8,6 +8,7 @@ import Deliverymiddelware, { reqDelivaery } from "../middlewares/deliverymiddelw
 import { client } from "../elsho8la_febetha";
 import { uploadSingleImage } from "../middlewares/uploadphotos";
 import jwt from "jsonwebtoken";
+import { number } from "zod";
 const router=express.Router();
 router.post('/checkAllusers',async(req,res)=>{
     try{
@@ -162,13 +163,18 @@ const Knowhisrole= await AllusersModel.findOneAndUpdate({number},{$set:{Isonline
     res.status(200).json({message:"Logged out successfully"});
 });
 
-router.get('/refreshToken', async (req, res) => {
+router.post('/refreshToken/:number', async (req, res) => {
     const refreshToken = req.cookies.refreshToken;
+    const number = req.params.number;
     if (!refreshToken) {
+         res.clearCookie("refreshToken");
+        const makeisonlinefalse = await AllusersModel.findOneAndUpdate({ number: number }, { $set: { Isonline: false } });
         return res.status(401).json({ message: "No refresh token provided" });
     }
     const role = await client.get(refreshToken);
     if (!role) {
+         res.clearCookie("refreshToken");
+        const makeisonlinefalse = await AllusersModel.findOneAndUpdate({ number: number }, { $set: { Isonline: false } });
         return res.status(403).json({ message: "Invalid refresh token" });
     }
     try {
